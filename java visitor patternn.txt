@@ -1,0 +1,115 @@
+class SumInLeavesVisitor extends TreeVis {
+    private int result = 0;
+
+    public int getResult() {
+        return result;
+    }
+
+    public void visitNode(TreeNode node) {
+    }
+
+    public void visitLeaf(TreeLeaf leaf) {
+        result += leaf.getValue();
+    }
+}
+
+class ProductOfRedNodesVisitor extends TreeVis {
+    private long result = 1;
+
+    public int getResult() {
+        return (int) result;
+    }
+
+    public void visitNode(TreeNode node) {
+        if (node.getColor() == Color.RED) {
+            result = (result * node.getValue()) % 1000000007;
+        }
+    }
+
+    public void visitLeaf(TreeLeaf leaf) {
+        if (leaf.getColor() == Color.RED) {
+            result = (result * leaf.getValue()) % 1000000007;
+        }
+    }
+}
+
+class FancyVisitor extends TreeVis {
+    private int greenLeafSum = 0;
+    private int evenDepthNodeSum = 0;
+
+    public int getResult() {
+        return Math.abs(greenLeafSum - evenDepthNodeSum);
+    }
+
+    public void visitNode(TreeNode node) {
+        if (node.getDepth() % 2 == 0) {
+            evenDepthNodeSum += node.getValue();
+        }
+    }
+
+    public void visitLeaf(TreeLeaf leaf) {
+        if (leaf.getColor() == Color.GREEN && leaf.getDepth() % 2 == 1) {
+            greenLeafSum += leaf.getValue();
+        }
+    }
+}
+
+public class Solution {
+
+    public static Tree solve() {
+        Scanner sc = new Scanner(System.in);
+
+        int n = sc.nextInt();
+
+        int[] values = new int[n];
+        Color[] colors = new Color[n];
+
+        for (int i = 0; i < n; i++) {
+            values[i] = sc.nextInt();
+        }
+
+        for (int i = 0; i < n; i++) {
+            colors[i] = sc.nextInt() == 0 ? Color.RED : Color.GREEN;
+        }
+
+        ArrayList<Integer>[] children = new ArrayList[n];
+
+        for (int i = 0; i < n; i++) {
+            children[i] = new ArrayList<>();
+        }
+
+        for (int i = 0; i < n - 1; i++) {
+            int u = sc.nextInt() - 1;
+            int v = sc.nextInt() - 1;
+
+            children[u].add(v);
+            children[v].add(u);
+        }
+
+        return buildTree(0, -1, 0, values, colors, children);
+    }
+
+    private static Tree buildTree(
+        int current,
+        int parent,
+        int depth,
+        int[] values,
+        Color[] colors,
+        ArrayList<Integer>[] children
+    ) {
+        if (children[current].size() == (parent == -1 ? 0 : 1)) {
+            return new TreeLeaf(values[current], colors[current], depth);
+        }
+
+        TreeNode node = new TreeNode(values[current], colors[current], depth);
+
+        for (int child : children[current]) {
+            if (child != parent) {
+                node.addChild(
+                    buildTree(child, current, depth + 1, values, colors, children)
+                );
+            }
+        }
+
+        return node;
+    }
